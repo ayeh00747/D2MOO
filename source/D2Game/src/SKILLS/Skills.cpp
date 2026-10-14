@@ -2690,7 +2690,11 @@ int32_t __fastcall SKILL_ComputePeriodicRate(D2GameStrc* pGame, D2UnitStrc* pUni
         nDelay = 5;
     }
 
-    return nDelay * (pGame->dwGameFrame + nDelay - 1) / nDelay + 1;
+    // Match the original x86 wrapping arithmetic and signed IDIV. The division
+    // must precede multiplication to align the result to a periodic boundary.
+    const int32_t nNumerator = static_cast<int32_t>(static_cast<uint32_t>(pGame->dwGameFrame) + static_cast<uint32_t>(nDelay) - 1u);
+    const int32_t nPeriods = nNumerator / nDelay;
+    return static_cast<int32_t>(static_cast<uint32_t>(nPeriods) * static_cast<uint32_t>(nDelay) + 1u);
 }
 
 //D2Game.0x6FD13260
