@@ -292,8 +292,8 @@ void __fastcall MONSTERUNIQUE_UMod16_Champion(D2UnitStrc* pUnit, int32_t nUMod, 
     }
 
     STATLIST_SetUnitStat(pUnit, STAT_LEVEL, STATLIST_UnitGetStatValue(pUnit, STAT_LEVEL, 0) - 1, 0);
-    const int32_t nExperience = STATLIST_GetUnitBaseStat(pUnit, STAT_EXPERIENCE, 0);
-    STATLIST_SetUnitStat(pUnit, STAT_EXPERIENCE, nExperience - 2 * nExperience / 5u, 0);
+    const uint32_t nExperience = static_cast<uint32_t>(STATLIST_GetUnitBaseStat(pUnit, STAT_EXPERIENCE, 0));
+    STATLIST_SetUnitStat(pUnit, STAT_EXPERIENCE, static_cast<int32_t>(nExperience - 2u * (nExperience / 5u)), 0);
 
     D2MonUModTxt* pMonUModTxtRecord = MONSTERUNIQUE_GetMonUModTxtRecord(11);
     int32_t nDamagePercent = pMonUModTxtRecord ? pMonUModTxtRecord->dwConstants : 0;
@@ -2189,10 +2189,9 @@ void __fastcall sub_6FC6E940(D2GameStrc* pGame, D2UnitStrc* pUnit, int32_t a3)
         bUModUsageTable[pMonUmods[i]] = 1;
     }
 
+    uint8_t* pUMod = &pMonUmods[nIndex];
     for (int32_t i = 0; i < nRandCount; ++i)
     {
-        uint8_t* pUMod = &pMonUmods[nIndex];
-
         const int32_t nUMod = sub_6FC6EE90(pGame, pUnit, bUModUsageTable);
         if (!nUMod)
         {
