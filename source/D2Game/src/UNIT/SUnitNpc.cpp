@@ -872,9 +872,12 @@ void __fastcall sub_6FCC7E20(D2GameStrc* pGame, D2UnitStrc* pNpc, D2UnitStrc* pI
 
         if (pNpcGamble && pNpcGamble->pInventory)
         {
-            for (D2UnitStrc* i = INVENTORY_GetFirstItem(pNpcGamble->pInventory); i; i = INVENTORY_GetNextItem(i))
+            for (D2UnitStrc* i = INVENTORY_GetFirstItem(pNpcGamble->pInventory); i;)
             {
-                if (INVENTORY_UnitIsItem(i) == pItem)
+                D2UnitStrc* pInventoryItem = INVENTORY_UnitIsItem(i);
+                // The original reads the successor before handling a match.
+                D2UnitStrc* pNextItem = INVENTORY_GetNextItem(i);
+                if (pInventoryItem == pItem)
                 {
                     if (pItem && pNpc)
                     {
@@ -896,6 +899,8 @@ void __fastcall sub_6FCC7E20(D2GameStrc* pGame, D2UnitStrc* pNpc, D2UnitStrc* pI
                     }
                     return;
                 }
+
+                i = pNextItem;
             }
 
         }
