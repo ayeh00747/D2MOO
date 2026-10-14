@@ -330,12 +330,14 @@ BOOL __fastcall INVENTORY_RemoveItem(D2UnitStrc* pItem)
 		return FALSE;
 	}
 
+	D2InventoryStrc* pParentInventory = pItemExtraData->pParentInv;
+
 	if (pItemExtraData->nNodePos > 0)
 	{
 		const int nNodePos = pItemExtraData->nNodePos - 1;
-		if (pItemExtraData->pParentInv->nGridCount > nNodePos)
+		if (pParentInventory->nGridCount > nNodePos)
 		{
-			D2InventoryGridStrc* pInventoryGrid = &pItemExtraData->pParentInv->pGrids[nNodePos];
+			D2InventoryGridStrc* pInventoryGrid = &pParentInventory->pGrids[nNodePos];
 
 			if (pItemExtraData->pPreviousGridItem)
 			{
@@ -402,9 +404,9 @@ BOOL __fastcall INVENTORY_RemoveItem(D2UnitStrc* pItem)
 		}
 	}
 
-	if (pItemExtraData->pParentInv->pCursorItem == pItem)
+	if (pParentInventory->pCursorItem == pItem)
 	{
-		pItemExtraData->pParentInv->pCursorItem = nullptr;
+		pParentInventory->pCursorItem = nullptr;
 	}
 	else
 	{
@@ -418,9 +420,9 @@ BOOL __fastcall INVENTORY_RemoveItem(D2UnitStrc* pItem)
 		}
 		else
 		{
-			if (pItemExtraData->pParentInv->pFirstItem == pItem)
+			if (pParentInventory->pFirstItem == pItem)
 			{
-				pItemExtraData->pParentInv->pFirstItem = pItemExtraData->pNextItem;
+				pParentInventory->pFirstItem = pItemExtraData->pNextItem;
 			}
 		}
 
@@ -434,33 +436,34 @@ BOOL __fastcall INVENTORY_RemoveItem(D2UnitStrc* pItem)
 		}
 		else
 		{
-			if (pItemExtraData->pParentInv->pLastItem == pItem)
+			if (pParentInventory->pLastItem == pItem)
 			{
-				pItemExtraData->pParentInv->pLastItem = pItemExtraData->pPreviousItem;
+				pParentInventory->pLastItem = pItemExtraData->pPreviousItem;
 			}
 		}
 
 		pItemExtraData->pNextItem = nullptr;
 		pItemExtraData->pPreviousItem = nullptr;
 
-		--pItemExtraData->pParentInv->dwItemCount;
+		--pParentInventory->dwItemCount;
 	}
 
-	ITEMS_SetOwnerId(pItem, -1);
-
-	if (pItemExtraData->pParentInv->pOwner)
-	{
-		STATLIST_ExpireUnitStatlist(pItemExtraData->pParentInv->pOwner, pItem);
-	}
-
-	if (pItemExtraData->pParentInv->dwLeftItemGUID == pItem->dwUnitId)
-	{
-		pItemExtraData->pParentInv->dwLeftItemGUID = D2UnitInvalidGUID;
-	}
-
+	// The original detaches the item before owner/stat callbacks observe it.
 	pItemExtraData->pParentInv = nullptr;
 	pItemExtraData->nNodePos = 0;
 	pItemExtraData->nNodePosOther = 0;
+
+	ITEMS_SetOwnerId(pItem, -1);
+
+	if (pParentInventory->pOwner)
+	{
+		STATLIST_ExpireUnitStatlist(pParentInventory->pOwner, pItem);
+	}
+
+	if (pParentInventory->dwLeftItemGUID == pItem->dwUnitId)
+	{
+		pParentInventory->dwLeftItemGUID = D2UnitInvalidGUID;
+	}
 
 	return TRUE;
 }
@@ -561,7 +564,7 @@ BOOL __stdcall INVENTORY_CompareWithItemsParentInventory(D2InventoryStrc* pInven
 	if (pInventory)
 	{
 		D2ItemExtraDataStrc* pItemExtraData = INVENTORY_GetItemExtraDataFromItem(pItem);
-		return pItemExtraData->pParentInv == pInventory;
+		return pItemExtraData && pItemExtraData->pParentInv == pInventory;
 	}
 
 	return FALSE;

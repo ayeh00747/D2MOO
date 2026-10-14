@@ -1967,6 +1967,7 @@ int32_t __fastcall ITEMS_GetManaPotionDropCode(D2UnitStrc* pUnit)
 //D2Game.0x6FC51070
 D2UnitStrc* __fastcall ITEMS_Duplicate(D2GameStrc* pGame, D2UnitStrc* pItem, D2UnitStrc* pOwner, int32_t bDuplicateSocketFillers)
 {
+    D2ActiveRoomStrc* pRoom = UNITS_GetRoom(pItem);
     D2ItemSaveStrc itemSave = {};
     uint8_t bitstream[1024] = {};
 
@@ -1974,7 +1975,7 @@ D2UnitStrc* __fastcall ITEMS_Duplicate(D2GameStrc* pGame, D2UnitStrc* pItem, D2U
     ITEMS_GetCompactItemDataFromBitstream(bitstream, nNextFreePos, 1, &itemSave);
 
     uint32_t nSize = 0;
-    D2UnitStrc* pDupe = sub_6FC4EC10(pGame, UNITS_GetRoom(pItem), bitstream, nNextFreePos, 1, &itemSave, &nSize, 96u);
+    D2UnitStrc* pDupe = sub_6FC4EC10(pGame, pRoom, bitstream, nNextFreePos, 1, &itemSave, &nSize, 96u);
     if (!pDupe)
     {
         return 0;

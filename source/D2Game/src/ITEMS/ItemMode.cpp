@@ -4141,12 +4141,13 @@ int32_t __fastcall sub_6FC48940(D2GameStrc* pGame, D2UnitStrc* pUnit, int32_t nI
     {
         for (D2UnitStrc* i = INVENTORY_GetFirstItem(pUnit->pInventory); i; i = INVENTORY_GetNextItem(i))
         {
-            if (INVENTORY_UnitIsItem(i) && ITEMS_CheckItemFlag(i, IFLAG_TARGETING, __LINE__, __FILE__))
+            D2UnitStrc* pInventoryItem = INVENTORY_UnitIsItem(i);
+            if (ITEMS_CheckItemFlag(pInventoryItem, IFLAG_TARGETING, __LINE__, __FILE__))
             {
-                ITEMS_SetItemFlag(i, IFLAG_TARGETING, 0);
+                ITEMS_SetItemFlag(pInventoryItem, IFLAG_TARGETING, 0);
                 if (pUnit->dwUnitType == UNIT_PLAYER)
                 {
-                    D2GAME_PACKETS_SendPacket0x3F_6FC3EDC0(SUNIT_GetClientFromPlayer(pUnit, __FILE__, __LINE__), i, -1, 1, 0, -1);
+                    D2GAME_PACKETS_SendPacket0x3F_6FC3EDC0(SUNIT_GetClientFromPlayer(pUnit, __FILE__, __LINE__), pInventoryItem, -1, 1, 0, -1);
                 }
             }
         }
@@ -4184,7 +4185,9 @@ int32_t __fastcall sub_6FC48940(D2GameStrc* pGame, D2UnitStrc* pUnit, int32_t nI
     }
     else
     {
-        //ITEMS_GetDimensions(pItem, (BYTE*)&nItemGUID, (BYTE*)&a6, __FILE__, __LINE__);
+        uint8_t nWidth = 0;
+        uint8_t nHeight = 0;
+        ITEMS_GetDimensions(pItem, &nWidth, &nHeight, __FILE__, __LINE__);
 
         if (!INVENTORY_PlaceItemInBeltSlot(pUnit->pInventory, pItem, nBeltSlot))
         {
@@ -5169,10 +5172,10 @@ int32_t __fastcall D2GAME_Transmogrify_6FC4A660(D2GameStrc* pGame, D2UnitStrc* p
 }
 
 //D2Game.0x6FC4A9B0
-int32_t __fastcall sub_6FC4A9B0(D2GameStrc* pGame, D2UnitStrc* pUnit, D2UnitStrc* pItem, uint8_t nBodyLoc)
+int32_t __fastcall sub_6FC4A9B0(D2GameStrc* pGame, D2UnitStrc* pUnit, D2UnitStrc* pItem, uint8_t bSkipRequirementCheck)
 {
-    int32_t a3 = 0;
-    if (!sub_6FC42F20(pUnit, pItem, &a3, nBodyLoc))
+    int32_t nBodyLoc = 0;
+    if (!sub_6FC42F20(pUnit, pItem, &nBodyLoc, bSkipRequirementCheck))
     {
         return 0;
     }
@@ -5191,6 +5194,7 @@ int32_t __fastcall sub_6FC4A9B0(D2GameStrc* pGame, D2UnitStrc* pUnit, D2UnitStrc
 
     if (!INVENTORY_PlaceItemInSocket(pUnit->pInventory, pItem, 3))
     {
+        INVENTORY_GetItemFromBodyLoc(pUnit->pInventory, nBodyLoc);
         FOG_DisplayAssert("0", __FILE__, __LINE__);
         exit(-1);
     }
